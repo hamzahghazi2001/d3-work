@@ -1,0 +1,5 @@
+NAME                IMAGE                    COMMAND                  SERVICE   CREATED              STATUS                        PORTS
+d3-work-db-1        postgres:16-alpine       "docker-entrypoint.s…"   db        About a minute ago   Up About a minute             0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+d3-work-mailpit-1   axllent/mailpit:latest   "/mailpit"               mailpit   About a minute ago   Up About a minute (healthy)   0.0.0.0:1025->1025/tcp, [::]:1025->1025/tcp, 0.0.0.0:8025->8025/tcp, [::]:8025->8025/tcp
+d3-work-redis-1     redis:7-alpine           "docker-entrypoint.s…"   redis     About a minute ago   Up About a minute             0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp
+d3-work-web-1       d3-work-web              "gunicorn -w 2 -b 0.…"   web       About a minute ago   Up About a minute             0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp
