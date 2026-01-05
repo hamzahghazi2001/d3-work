@@ -11,3 +11,72 @@
 2026-01-05 07:54:53,215 INFO app WEB_STARTUP
 2026-01-05 07:54:53,235 INFO app WEB_STARTUP
 2026-01-05 09:03:13,176 INFO debug TEST_EMAIL_SENT to Mailpit SMTP
+2026-01-05 10:21:42,669 INFO app WEB_STARTUP
+2026-01-05 10:21:42,673 INFO app WEB_STARTUP
+2026-01-05 14:14:05,346 INFO app WEB_STARTUP
+2026-01-05 14:14:05,345 INFO app WEB_STARTUP
+2026-01-05 14:19:25,391 INFO app WEB_STARTUP
+2026-01-05 14:19:25,391 INFO app WEB_STARTUP
+2026-01-05 14:26:26,389 INFO app WEB_STARTUP
+2026-01-05 14:26:26,389 INFO app WEB_STARTUP
+2026-01-05 14:31:20,368 INFO app WEB_STARTUP
+2026-01-05 14:31:20,368 INFO app WEB_STARTUP
+2026-01-05 14:31:23,496 ERROR app Exception on /register/start [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/app/routes/passkeys.py", line 59, in register_start
+    rp_id = current_app.config["WEBAUTHN_RP_ID"]
+            ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'WEBAUTHN_RP_ID'
+2026-01-05 14:28:03,202 ERROR app Exception on /register/start [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/app/routes/passkeys.py", line 59, in register_start
+    rp_id = current_app.config["WEBAUTHN_RP_ID"]
+            ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'WEBAUTHN_RP_ID'
+2026-01-05 14:36:05,110 INFO app WEB_STARTUP
+2026-01-05 16:20:19,484 ERROR app Exception on /register/start [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/app/routes/passkeys.py", line 59, in register_start
+    rp_id = current_app.config["WEBAUTHN_RP_ID"]
+            ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'WEBAUTHN_RP_ID'
+2026-01-05 16:54:44,618 INFO app WEB_STARTUP
+2026-01-05 16:54:44,618 INFO app WEB_STARTUP
+2026-01-05 16:54:03,067 INFO app WEB_STARTUP
+2026-01-05 16:54:26,922 INFO app WEB_STARTUP

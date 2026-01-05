@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Phase 2 – Passkey Registration Demo</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
+      label { display: block; margin-top: 1rem; font-weight: 600; }
+      input { padding: 0.6rem; width: min(520px, 95%); }
+      button { margin-top: 1rem; padding: 0.7rem 1rem; cursor: pointer; }
+      pre { background: #111; color: #eee; padding: 1rem; overflow: auto; border-radius: 10px; }
+      .hint { opacity: 0.8; font-size: 0.95rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Phase 2: Passkey Registration (Demo)</h1>
+    <p class="hint">
+      This page exists only to run the WebAuthn registration ceremony for evidence screenshots.
+      If registration fails, it’s almost always an <b>origin/RP ID mismatch</b>.
+    </p>
+
+    <label>Email (creates user if missing)</label>
+    <input id="email" placeholder="you@example.com" />
+
+    <button id="btn">Register passkey</button>
+
+    <h3>Result</h3>
+    <pre id="out">Idle</pre>
+
+    <!-- SimpleWebAuthn browser helper (recommended) -->
+    <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
+    <script>
+      const out = document.getElementById("out");
+      const btn = document.getElementById("btn");
+
+      function log(obj) {
+        out.textContent = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
+      }
+
+      btn.addEventListener("click", async () => {
+        try {
+          const email = document.getElementById("email").value.trim();
+          if (!email) return log("Enter an email");
+
+          log("1) Requesting /register/start ...");
+          const startRes = await fetch("/register/start", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+          const options = await startRes.json();
+          if (!startRes.ok) return log(options);
+
+          log("2) Running navigator.credentials.create ...");
+          const attResp = await SimpleWebAuthnBrowser.startRegistration(options);
+
+          log("3) Sending /register/finish ...");
+          const finishRes = await fetch("/register/finish", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(attResp),
+          });
+          const finish = await finishRes.json();
+          log(finish);
+        } catch (e) {
+          log({ error: String(e) });
+        }
+      });
+    </script>
+  </body>
+</html>

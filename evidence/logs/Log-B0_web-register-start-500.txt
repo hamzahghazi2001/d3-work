@@ -1,0 +1,74 @@
+web-1  | [2026-01-05 14:27:58 +0000] [1] [INFO] Starting gunicorn 22.0.0
+web-1  | [2026-01-05 14:27:58 +0000] [1] [INFO] Listening at: http://0.0.0.0:5000 (1)
+web-1  | [2026-01-05 14:27:58 +0000] [1] [INFO] Using worker: sync
+web-1  | [2026-01-05 14:27:58 +0000] [7] [INFO] Booting worker with pid: 7
+web-1  | [2026-01-05 14:27:58 +0000] [8] [INFO] Booting worker with pid: 8
+web-1  | 2026-01-05 14:31:20,368 INFO app WEB_STARTUP
+web-1  | 2026-01-05 14:31:20,368 INFO app WEB_STARTUP
+web-1  | 2026-01-05 14:31:23,496 ERROR app Exception on /register/start [POST]
+web-1  | Traceback (most recent call last):
+web-1  |   File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 1473, in wsgi_app
+web-1  |     response = self.full_dispatch_request()
+web-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1  |   File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 882, in full_dispatch_request
+web-1  |     rv = self.handle_user_exception(e)
+web-1  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1  |   File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 880, in full_dispatch_request
+web-1  |     rv = self.dispatch_request()
+web-1  |          ^^^^^^^^^^^^^^^^^^^^^^^
+web-1  |   File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 865, in dispatch_request
+web-1  |     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+web-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1  |   File "/workspace/app/routes/passkeys.py", line 59, in register_start
+web-1  |     rp_id = current_app.config["WEBAUTHN_RP_ID"]
+web-1  |             ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+web-1  | KeyError: 'WEBAUTHN_RP_ID'
+web-1  | 2026-01-05 14:28:03,202 ERROR app Exception on /register/start [POST]
+web-1  | Traceback (most recent call last):
+web-1  |   File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 1473, in wsgi_app
+web-1  |     response = self.full_dispatch_request()
+web-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1  |   File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 882, in full_dispatch_request
+web-1  |     rv = self.handle_user_exception(e)
+web-1  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1  |   File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 880, in full_dispatch_request
+web-1  |     rv = self.dispatch_request()
+web-1  |          ^^^^^^^^^^^^^^^^^^^^^^^
+web-1  |   File "/usr/local/lib/python3.12/site-packages/flask/app.py", line 865, in dispatch_request
+web-1  |     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+web-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1  |   File "/workspace/app/routes/passkeys.py", line 59, in register_start
+web-1  |     rp_id = current_app.config["WEBAUTHN_RP_ID"]
+web-1  |             ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+web-1  | KeyError: 'WEBAUTHN_RP_ID'
+web-1  | [2026-01-05 14:36:04 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:8)
+web-1  | [2026-01-05 14:36:04 +0000] [8] [ERROR] Error handling request (no URI read)
+web-1  | Traceback (most recent call last):
+web-1  |   File "/usr/local/lib/python3.12/site-packages/gunicorn/workers/sync.py", line 134, in handle
+web-1  |     req = next(parser)
+web-1  |           ^^^^^^^^^^^^
+web-1  |   File "/usr/local/lib/python3.12/site-packages/gunicorn/http/parser.py", line 42, in __next__
+web-1  |     self.mesg = self.mesg_class(self.cfg, self.unreader, self.source_addr, self.req_count)
+web-1  |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1  |   File "/usr/local/lib/python3.12/site-packages/gunicorn/http/message.py", line 257, in __init__
+web-1  |     super().__init__(cfg, unreader, peer_addr)
+web-1  |   File "/usr/local/lib/python3.12/site-packages/gunicorn/http/message.py", line 60, in __init__
+web-1  |     unused = self.parse(self.unreader)
+web-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1  |   File "/usr/local/lib/python3.12/site-packages/gunicorn/http/message.py", line 269, in parse
+web-1  |     self.get_data(unreader, buf, stop=True)
+web-1  |   File "/usr/local/lib/python3.12/site-packages/gunicorn/http/message.py", line 260, in get_data
+web-1  |     data = unreader.read()
+web-1  |            ^^^^^^^^^^^^^^^
+web-1  |   File "/usr/local/lib/python3.12/site-packages/gunicorn/http/unreader.py", line 37, in read
+web-1  |     d = self.chunk()
+web-1  |         ^^^^^^^^^^^^
+web-1  |   File "/usr/local/lib/python3.12/site-packages/gunicorn/http/unreader.py", line 64, in chunk
+web-1  |     return self.sock.recv(self.mxchunk)
+web-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+web-1  |   File "/usr/local/lib/python3.12/site-packages/gunicorn/workers/base.py", line 203, in handle_abort
+web-1  |     sys.exit(1)
+web-1  | SystemExit: 1
+web-1  | [2026-01-05 14:36:04 +0000] [8] [INFO] Worker exiting (pid: 8)
+web-1  | [2026-01-05 14:36:04 +0000] [15] [INFO] Booting worker with pid: 15
+web-1  | 2026-01-05 14:36:05,110 INFO app WEB_STARTUP
