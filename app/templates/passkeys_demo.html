@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Phase 2 – Passkey Registration Demo</title>
+    <title> Passkey Registration Demo</title>
     <style>
       body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
       label { display: block; margin-top: 1rem; font-weight: 600; }
@@ -16,10 +16,10 @@
   <body>
     <h1>Phase 2: Passkey Registration (Demo)</h1>
     <p class="hint">
-      This page exists only to run the WebAuthn registration ceremony for evidence screenshots.
-      If registration fails, it’s almost always an <b>origin/RP ID mismatch</b>.
+      This page exists only to run the WebAuthn registration </b>.
     </p>
-
+<!-- ceremony for evidence screenshots.
+      If registration fails, it’s almost always an <b>origin/RP ID mismatch -->
     <label>Email (creates user if missing)</label>
     <input id="email" placeholder="you@example.com" />
 
@@ -28,7 +28,7 @@
     <h3>Result</h3>
     <pre id="out">Idle</pre>
 
-    <!-- SimpleWebAuthn browser helper (recommended) -->
+    <!-- SimpleWebAuthn browser helper-->
     <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
     <script>
       const out = document.getElementById("out");
