@@ -21,20 +21,20 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = app.config.get("DATABASE_URL")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # (prevents silent 500s later)
+    # Fail fast if critical config is missing (prevents silent 500s later)
     required = ["DATABASE_URL", "REDIS_URL", "WEBAUTHN_RP_ID", "WEBAUTHN_RP_NAME", "WEBAUTHN_ORIGIN"]
     missing = [k for k in required if not app.config.get(k)]
     if missing:
         raise RuntimeError(f"Missing required config keys: {', '.join(missing)}")
 
-    # setup_logging expects a *path string*
+    # IMPORTANT: your setup_logging expects a *path string*, not the Flask app
     setup_logging(app.config["EVIDENCE_LOG_PATH"])
     logging.getLogger("app").info("WEB_STARTUP")
 
     db.init_app(app)
     migrate.init_app(app, db)
 
-
+    # Keep Phase 1 behavior: ensure baseline tables exist for T-01
     with app.app_context():
         from . import models  # registers models
         db.create_all()
