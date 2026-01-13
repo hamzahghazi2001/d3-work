@@ -70,8 +70,6 @@ def register_start():
         ),
     )
 
-    # Store a server-issued challenge context keyed by the challenge itself.
-    # This lets /register/finish find the user without trusting any user_id/email echoed back.
     challenge_b64 = _b64url_encode(options.challenge)
     r = redis.Redis.from_url(current_app.config["REDIS_URL"], decode_responses=True)
     r.setex(f"webauthn:reg_chal:{challenge_b64}", ttl, str(user.id))

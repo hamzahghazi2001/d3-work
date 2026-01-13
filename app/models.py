@@ -22,7 +22,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
 
-    # Stable WebAuthn user handle (bytes). This is what authenticator binds to.
+    # Stable WebAuthn user handle 
     webauthn_user_id = db.Column(db.LargeBinary(32), unique=True, nullable=False, default=new_webauthn_user_id)
 
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)

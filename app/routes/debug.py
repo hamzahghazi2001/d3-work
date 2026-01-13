@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 @bp.route("/debug/send-test-email")
 def send_test_email():
     msg = EmailMessage()
-    msg["Subject"] = "Phase 1 Test Email"
+    msg["Subject"] = "Test Email"
     msg["From"] = "test@local"
     msg["To"] = "you@example.com"
     msg.set_content("If you see this in Mailpit, SMTP is working.")
@@ -29,7 +29,7 @@ def send_test_email():
             user_id=None,
             ip=request.remote_addr,
             user_agent=request.headers.get("User-Agent"),
-            message="Sent Phase 1 test email via Mailpit",
+            message="Sent test email via Mailpit",
             meta={"to": "you@example.com"},
         )
     )
