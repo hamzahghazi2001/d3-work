@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Passkey Login Demo</title>
+</head>
+<body>
+  <h1>Passkey Login</h1>
+  <input id="email" placeholder="email" />
+  <button onclick="doLogin()">Login with passkey</button>
+  <pre id="out"></pre>
+
+  <script src="https://unpkg.com/@simplewebauthn/browser@8.3.5/dist/bundle/index.umd.min.js"></script>
+  <script>
+    async function doLogin() {
+      const out = document.getElementById("out");
+      out.textContent = "starting...";
+
+      const email = document.getElementById("email").value.trim().toLowerCase();
+
+      const start = await fetch("/login/start", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({email})
+      });
+      const options = await start.json();
+      if (!start.ok) { out.textContent = JSON.stringify(options, null, 2); return; }
+
+      const assertion = await SimpleWebAuthnBrowser.startAuthentication(options);
+
+      const finish = await fetch("/login/finish", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({email, challenge_b64: options.challenge, assertion})
+      });
+      const res = await finish.json();
+      out.textContent = JSON.stringify(res, null, 2);
+    }
+  </script>
+</body>
+</html>

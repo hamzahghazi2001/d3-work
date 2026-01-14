@@ -19,3 +19,4 @@ coverage.xml
 .idea/
 .DS_Store
 Thumbs.db
+.evidence/

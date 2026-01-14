@@ -1,7 +1,8 @@
 import base64
 import json
 import logging
-
+from webauthn import generate_authentication_options, verify_authentication_response
+from webauthn.helpers.structs import AuthenticationCredential
 import redis
 from flask import Blueprint, current_app, jsonify, render_template, request
 from webauthn import (
@@ -211,3 +212,216 @@ def list_credentials():
             }
         )
     return jsonify(out)
+
+@bp.post("/login/start")
+def login_start():
+    body = request.get_json(silent=True) or {}
+    email = (body.get("email") or "").strip().lower()
+    if not email:
+        return jsonify({"error": "missing_email"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"error": "user_not_found"}), 404
+
+    creds = Credential.query.filter_by(user_id=user.id).all()
+    if not creds:
+        return jsonify({"error": "no_credentials_for_user"}), 404
+
+    allow_creds = []
+    for c in creds:
+        allow_creds.append(
+            PublicKeyCredentialDescriptor(
+                id=base64url_to_bytes(c.credential_id),
+                type=PublicKeyCredentialType.PUBLIC_KEY,
+                transports=c.transports or [],
+            )
+        )
+
+    options = generate_authentication_options(
+        rp_id=current_app.config["WEBAUTHN_RP_ID"],
+        allow_credentials=allow_creds,
+        user_verification=UserVerificationRequirement.DISCOURAGED,
+    )
+
+    challenge_b64 = options.challenge
+    redis_client = redis.Redis.from_url(current_app.config["REDIS_URL"], decode_responses=True)
+
+    key = f"webauthn:auth_chal:{challenge_b64}"
+    redis_client.setex(
+        key,
+        current_app.config["WEBAUTHN_AUTH_CHALLENGE_TTL_SECONDS"],
+        json.dumps({"user_id": user.id, "email": user.email}, separators=(",", ":")),
+    )
+
+    db.session.add(AuditLog(
+        event_type="WEBAUTHN_LOGIN_START",
+        user_id=user.id,
+        ip_address=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        details={"challenge_key": "stored", "ttl_s": current_app.config["WEBAUTHN_AUTH_CHALLENGE_TTL_SECONDS"]},
+    ))
+    db.session.commit()
+
+    return jsonify(options.model_dump())
+
+
+@bp.post("/login/finish")
+def login_finish():
+    body = request.get_json(silent=True) or {}
+    email = (body.get("email") or "").strip().lower()
+    challenge_b64 = body.get("challenge_b64")
+    assertion = body.get("assertion")  # SimpleWebAuthn response object
+
+    if not email or not challenge_b64 or not assertion:
+        return jsonify({"error": "missing_fields"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"error": "user_not_found"}), 404
+
+    redis_client = redis.Redis.from_url(current_app.config["REDIS_URL"], decode_responses=True)
+    key = f"webauthn:auth_chal:{challenge_b64}"
+    stored = redis_client.get(key)
+    if not stored:
+        db.session.add(AuditLog(
+            event_type="WEBAUTHN_LOGIN_FAIL",
+            user_id=user.id,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get("User-Agent"),
+            details={"reason": "challenge_missing_or_expired"},
+        ))
+        db.session.commit()
+        return jsonify({"error": "challenge_missing_or_expired"}), 400
+
+    stored_ctx = json.loads(stored)
+    if stored_ctx.get("user_id") != user.id:
+        db.session.add(AuditLog(
+            event_type="WEBAUTHN_LOGIN_FAIL",
+            user_id=user.id,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get("User-Agent"),
+            details={"reason": "challenge_user_mismatch"},
+        ))
+        db.session.commit()
+        return jsonify({"error": "challenge_user_mismatch"}), 400
+
+    cred_id_b64 = assertion.get("id")
+    if not cred_id_b64:
+        return jsonify({"error": "missing_credential_id"}), 400
+
+    cred = Credential.query.filter_by(user_id=user.id, credential_id=cred_id_b64).first()
+    if not cred:
+        db.session.add(AuditLog(
+            event_type="WEBAUTHN_LOGIN_FAIL",
+            user_id=user.id,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get("User-Agent"),
+            details={"reason": "unknown_credential"},
+        ))
+        db.session.commit()
+        return jsonify({"error": "unknown_credential"}), 400
+
+    try:
+        credential = AuthenticationCredential.parse_raw(json.dumps(assertion))
+
+        verification = verify_authentication_response(
+            credential=credential,
+            expected_challenge=base64url_to_bytes(challenge_b64),
+            expected_origin=current_app.config["WEBAUTHN_ORIGIN"],
+            expected_rp_id=current_app.config["WEBAUTHN_RP_ID"],
+            credential_public_key=base64url_to_bytes(cred.public_key),
+            credential_current_sign_count=cred.sign_count,
+            require_user_verification=False,
+        )
+    except Exception as e:
+        db.session.add(AuditLog(
+            event_type="WEBAUTHN_LOGIN_FAIL",
+            user_id=user.id,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get("User-Agent"),
+            details={"reason": "assertion_verify_failed"},
+        ))
+        db.session.commit()
+        return jsonify({"error": "assertion_verify_failed"}), 400
+
+    # Update sign_count
+    cred.sign_count = verification.new_sign_count
+    db.session.add(cred)
+
+    # Anti-replay: delete challenge key after success
+    redis_client.delete(key)
+
+    # Create session (server-side, Redis)
+    sid = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    redis_client.setex(
+        f"session:{sid}",
+        current_app.config["SESSION_TTL_SECONDS"],
+        json.dumps({"user_id": user.id, "last_auth_at": now, "created_at": now}, separators=(",", ":")),
+    )
+
+    db.session.add(AuditLog(
+        event_type="WEBAUTHN_LOGIN_SUCCESS",
+        user_id=user.id,
+        ip_address=request.remote_addr,
+        user_agent=request.headers.get("User-Agent"),
+        details={"session": "created", "last_auth_at": now},
+    ))
+    db.session.commit()
+
+    resp = jsonify({"status": "ok"})
+    resp.set_cookie(
+        current_app.config["SESSION_COOKIE_NAME"],
+        sid,
+        httponly=True,
+        samesite="Lax",
+    )
+    return resp
+@bp.get("/logout")
+def logout():
+    sid = request.cookies.get(current_app.config["SESSION_COOKIE_NAME"])
+    if sid:
+        redis_client = redis.Redis.from_url(current_app.config["REDIS_URL"], decode_responses=True)
+        sess = redis_client.get(f"session:{sid}")
+        redis_client.delete(f"session:{sid}")
+
+        user_id = None
+        if sess:
+            try:
+                user_id = json.loads(sess).get("user_id")
+            except Exception:
+                pass
+
+        db.session.add(AuditLog(
+            event_type="LOGOUT_SUCCESS",
+            user_id=user_id,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get("User-Agent"),
+            details={},
+        ))
+        db.session.commit()
+
+    resp = jsonify({"status": "ok"})
+    resp.set_cookie(current_app.config["SESSION_COOKIE_NAME"], "", expires=0)
+    return resp
+
+
+@bp.get("/protected")
+def protected():
+    sid = request.cookies.get(current_app.config["SESSION_COOKIE_NAME"])
+    if not sid:
+        return jsonify({"error": "not_authenticated"}), 401
+
+    redis_client = redis.Redis.from_url(current_app.config["REDIS_URL"], decode_responses=True)
+    sess = redis_client.get(f"session:{sid}")
+    if not sess:
+        return jsonify({"error": "not_authenticated"}), 401
+
+    ctx = json.loads(sess)
+    return jsonify({"status": "ok", "user_id": ctx.get("user_id"), "last_auth_at": ctx.get("last_auth_at")})
+
+
+@bp.get("/demo/login")
+def demo_login():
+    return render_template("passkeys_login_demo.html")
